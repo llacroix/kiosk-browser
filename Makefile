@@ -2,10 +2,10 @@ PROGRAM=browser
 OBJECTS=browser.o
 
 CC=gcc
-CFLAGS=$(shell pkg-config --cflags gtk+-2.0 webkit-1.0)
+CFLAGS=$(shell pkg-config --cflags gtk+-3.0 webkit2gtk-3.0)
 CFLAGS+= -Wall -g
 
-LDFLAGS=$(shell pkg-config --libs gtk+-2.0 webkit-1.0)
+LDFLAGS=$(shell pkg-config --libs gtk+-3.0 webkit2gtk-3.0)
 
 all: $(PROGRAM)
 

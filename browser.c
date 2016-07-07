@@ -2,8 +2,9 @@
 #include <signal.h>
 
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#include <webkit/webkit.h>
+//#include <gdk/gdkkeysyms.h>
+#include <gdk/gdkkeysyms-compat.h>
+#include <webkit2/webkit2.h>
 
 gboolean on_key_press(GtkWidget*, GdkEventKey*, gpointer);
 
@@ -13,8 +14,12 @@ void maximize();
 void unmaximize();
 
 static WebKitWebView* web_view;
+static WebKitWebContext* webkit_ctx;
+static WebKitCookieManager* cookie_manager;
 static GtkWidget *window;
+
 gchar* default_url = "https://github.com/pschultz/kiosk-browser/blob/master/README.md";
+gchar* default_cookie_file = "./cookies.txt";
 
 int main(int argc, char** argv) {
   gtk_init(&argc, &argv);
@@ -26,15 +31,31 @@ int main(int argc, char** argv) {
 
   web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
 
+  /* Set cookie manager
+   */
+  webkit_ctx = webkit_web_view_get_context(web_view);
+  cookie_manager = webkit_web_context_get_cookie_manager(webkit_ctx);
+
+  if (argc > 2) {
+    webkit_cookie_manager_set_persistent_storage(cookie_manager, argv[2], WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
+  } else {
+    webkit_cookie_manager_set_persistent_storage(cookie_manager, "./cookies.txt", WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT);
+  }
+
+  //  WEBKIT_COOKIE_PERSISTENT_STORAGE_TEXT
+  //  WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE
+
   signal(SIGHUP, reload_browser);
   signal(SIGUSR1, toggle_fullscreen);
 
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(web_view));
 
   if(argc > 1) {
+    //webkit_web_view_load_uri(web_view, argv[1]);
     webkit_web_view_load_uri(web_view, argv[1]);
   }
   else {
+    //webkit_web_view_load_uri(web_view, default_url);
     webkit_web_view_load_uri(web_view, default_url);
   }
 
